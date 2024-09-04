@@ -54,6 +54,11 @@ func RandDeepColor() color.RGBA {
 	return color.RGBA{R: uint8(red), G: uint8(green), B: uint8(blue), A: uint8(255)}
 }
 
+// RandDeepColor get random deep color. 生成深色系.
+func DeepColor() color.RGBA {
+	return color.RGBA{R: uint8(0), G: uint8(0), B: uint8(0), A: uint8(255)}
+}
+
 // RandLightColor get random ligth color. 随机生成浅色.
 func RandLightColor() color.RGBA {
 	red := rand.Intn(55) + 200

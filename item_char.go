@@ -5,9 +5,6 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"github.com/golang/freetype"
-	"github.com/golang/freetype/truetype"
-	"golang.org/x/image/font"
 	"image"
 	"image/color"
 	"image/draw"
@@ -16,6 +13,10 @@ import (
 	"log"
 	"math"
 	"math/rand"
+
+	"github.com/golang/freetype"
+	"github.com/golang/freetype/truetype"
+	"golang.org/x/image/font"
 )
 
 // ItemChar captcha item of unicode characters
@@ -219,6 +220,34 @@ func (item *ItemChar) drawText(text string, fonts []*truetype.Font) error {
 	for i, s := range text {
 		fontSize := item.height * (rand.Intn(7) + 7) / 16
 		c.SetSrc(image.NewUniform(RandDeepColor()))
+		c.SetFontSize(float64(fontSize))
+		c.SetFont(randFontFrom(fonts))
+		x := fontWidth*i + fontWidth/fontSize
+		y := item.height/2 + fontSize/2 - rand.Intn(item.height/16*3)
+		pt := freetype.Pt(x, y)
+		if _, err := c.DrawString(string(s), pt); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (item *ItemChar) drawTextV2(text string, fonts []*truetype.Font) error {
+	c := freetype.NewContext()
+	c.SetDPI(imageStringDpi)
+	c.SetClip(item.nrgba.Bounds())
+	c.SetDst(item.nrgba)
+	c.SetHinting(font.HintingFull)
+
+	if len(text) == 0 {
+		return errors.New("text must not be empty, there is nothing to draw")
+	}
+
+	fontWidth := item.width / len(text)
+
+	for i, s := range text {
+		fontSize := item.height * (rand.Intn(7) + 7) / 16
+		c.SetSrc(image.NewUniform(DeepColor()))
 		c.SetFontSize(float64(fontSize))
 		c.SetFont(randFontFrom(fonts))
 		x := fontWidth*i + fontWidth/fontSize

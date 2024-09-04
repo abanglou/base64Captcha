@@ -39,7 +39,7 @@ type DriverDigitV2 struct {
 
 	//Fonts loads by name see fonts.go's comment
 	Fonts      []string
-	FontsArray []*truetype.Font
+	fontsArray []*truetype.Font
 }
 
 // NewDriverDigit creates a driver of digit
@@ -49,6 +49,25 @@ func NewDriverDigitV2(height int, width int, length int, maxSkew float64, dotCou
 
 // DefaultDriverDigit is a default driver of digit
 var DefaultDriverDigitV2 = NewDriverDigit(80, 240, 5, 0.7, 80)
+
+// ConvertFonts loads fonts from names
+func (d *DriverDigitV2) ConvertFonts() *DriverDigitV2 {
+	if d.fontsStorage == nil {
+		d.fontsStorage = DefaultEmbeddedFonts
+	}
+
+	tfs := []*truetype.Font{}
+	for _, fff := range d.Fonts {
+		tf := d.fontsStorage.LoadFontByName("fonts/" + fff)
+		tfs = append(tfs, tf)
+	}
+	if len(tfs) == 0 {
+		tfs = fontsAll
+	}
+	d.fontsArray = tfs
+
+	return d
+}
 
 // GenerateIdQuestionAnswer creates captcha content and answer
 func (d *DriverDigitV2) GenerateIdQuestionAnswer() (id, q, a string) {
@@ -77,7 +96,7 @@ func (d *DriverDigitV2) DrawCaptcha(content string) (item Item, err error) {
 	// itemDigit := NewItemDigit(d.Width, d.Height, d.DotCount, d.MaxSkew)
 	itemChar := NewItemChar(d.Width, d.Height, bgc)
 	//draw question
-	err = itemChar.drawText(content, d.FontsArray)
+	err = itemChar.drawTextV2(content, d.fontsArray)
 	if err != nil {
 		return
 	}
